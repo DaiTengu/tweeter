@@ -1,0 +1,233 @@
+********************************
+**  TWEETER v1.0              **
+**  by Mike "DaiTengu" Miller **
+**  https://warensemble.com   **
+********************************
+Hey, so I'm almost as bad at documentation as I am at coding. 
+       You've been warned.
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Tweeter uses echicken's twitter.js script to post the following events 
+on twitter:
+
+* When someone logs on
+* When someone logs off
+* When someone runs an external program (door game) through the external 
+  program menu (not during logon/logoff)
+* when someone posts a message
+* when someone uploads a file
+* when someone downloads a file
+
+
+Currently these only work for actions done on the terminal server itself.
+They do not work for ftp/web/nntp/etc. 
+
+This script has a throttle built in so that it will not send out a blast of 
+tweets if someone batch downloads an entire file section, and it has an option
+to ignore "Sysop" users (Sec level 99 or above). The settings are configurable
+in modopts.ini.
+
+
+
+---===] Requirements [===---
+* A current version of Synchronet (3.17b or later)
+* A copy of xtrn_sec.js v1.21 or later (2019/01/07) (included with this release)
+* echicken's twitter.js script (included with this release)
+
+
+---===] Instructions [===---
+1. You need a Twitter account. (https://twitter.com/signup)
+
+2. You will need Twitter API keys. 
+   (https://developer.twitter.com/en/account/get-started)
+   See below for a brief walkthrough of the signup process, as it can be a 
+   little confusing.
+
+3. Copy tweeter.js into your SBBS Exec folder (eg: /sbbs/exec or C:\sbbs\exec)
+
+4. copy twitter.js into exec/load (eg: /sbbs/exec/load or C:\sbbs\exec\load )
+
+5. If you are NOT running an updated CVS/development version of Synchronet:
+   * Copy xtrn_sec.js-v1.21 to your SBBS Exec folder as xtrn_sec.js 
+     (eg: /sbbs/exec/xtrn_sec.js or C:\sbbs\exec\xtrn_sec.js).
+     //// !!NOTE!! ////
+     This will overwrite your existing xtrn_sec.js file. 
+     You can also download the latest version of this file from: 
+     http://cvs.synchro.net/cgi-bin/viewcvs.cgi/*checkout*/exec/xtrn_sec.js
+
+6. Add the following section to your modopts.ini file in your ctrl directory
+   (eg: /sbbs/ctrl/modopts.ini or C:\sbbs\ctrl\modopts.ini):
+   [twitter]
+   ; Twitter keys available from https://developer.twitter.com
+   ; you must sign up for these
+   consumer_key = <Twitter Consumer API key>
+   consumer_secret = <Twitter Consumer API secret key>
+   access_token = <Twitter Access token key>
+   access_token_secret = <Twitter Access token secret key>
+   ; tweet if user is a sysop? ( true or false only )
+   tw_on_sysop = true
+   ; don't send another tweet unless it has been at least this many seconds
+   ; setting this to 0 might be a bad idea. default = 10
+   tw_throttle_time = 10
+
+
+---===] Instructions for each event [===---
+The script can handle tweeting for many types of events. Each has to be set
+up individually. If you do not want an event to be tweeted about (for example:
+you don't want to tweet when someone downloads a file), just don't set up that
+event.
+
+-=] Logon [=-
+1. SCFG->Externap Programs->Fixed Events->Logon Event
+   * Warning - if you already have something here, you will need to call this 
+   * script from that script. How to do this is beyond the scope of this 
+   * document as each situation is unique. Check the support section at the 
+   * bottom of this document if you need assistance with this.
+2. enter: ?tweeter.js logon
+3. Hit enter to save.
+
+-=] Logoff [=-
+1. SCFG->Externap Programs->Fixed Events->Logoff Event
+   * Warning - if you already have something here, you will need to call this 
+   * script from that script. How to do this is beyond the scope of this 
+   * document as each situation is unique. Check the support section at the 
+   * bottom of this document if you need assistance with this.
+2. enter: ?tweeter.js logoff
+3. Hit enter to save.
+
+-=] Message Posted [=-
+1. SCFG->External Programs->Online Programs (Doors)->Events->Available Online Programs...
+   (I created an "Events" section that's only accessable to Sysops to store these,
+    but they can be placed anywhere, as once they're set to only execute on event
+    they become invisible)
+2. Online Program Name: Message Posted Event (or whatever you want)
+3. Internal Code: (whatever you want)
+4. Hit Enter and edit the following:
+   a.  Command Line: ?tweeter.js post
+   b.  Execute on Event: Message Posted  (Select "Yes" on Execute as Event Only)
+       It should look something like this:
+        ┌[·][?]────────────────────────────────────────────────────┐
+        │                    Message Posted Event                  │
+        ├──────────────────────────────────────────────────────────┤
+        │ │Name                       Message Posted Event         │
+        │ │Internal Code              MSGPOST                      │
+        │ │Start-up Directory                                      │
+        │ │Command Line               ?tweeter.js post             │
+        │ │Clean-up Command Line                                   │
+        │ │Execution Cost             None                         │
+        │ │Access Requirements                                     │
+        │ │Execution Requirements                                  │
+        │ │Multiple Concurrent Users  Yes                          │
+        │ │Intercept I/O              No                           │
+        │ │Native Executable          No                           │
+        │ │Use Shell to Execute       No                           │
+        │ │Modify User Data           No                           │
+        │ │Execute on Event           Message Posted, Only         │
+        │ │Pause After Execution      No                           │
+        │ │BBS Drop File Type         None                         │
+        │ │Place Drop File In         Node Directory               │
+        │ │Time Options...                                         │
+        └──────────────────────────────────────────────────────────┘
+
+-=] File Downloaded [=-
+1. SCFG->External Programs->Online Programs (Doors)->Events->Available Online Programs...
+2. Online Program Name: Download File Event (or whatever you want)
+3. Internal Code: (whatever you want)
+4. Hit Enter and edit the following:
+   a.  Command Line: ?tweeter.js post
+   b.  Execute on Event: File Downloaded  (Select "Yes" on Execute as Event 
+       Only)
+-=] File Uploaded [=-
+1. SCFG->External Programs->Online Programs (Doors)->Events->Available Online Programs...
+2. Online Program Name: Uploaded File Event (or whatever you want)
+3. Internal Code: (whatever you want)
+4. Hit Enter and edit the following:
+   a.  Command Line: ?tweeter.js upload
+   b.  Execute on Event: File Uploaded  (Select "Yes" on Execute as Event 
+       Only)
+
+-=] Doors [=-
+1. Edit the "modopts.ini" file in your CTRL directory 
+   (eg: /sbbs/ctrl/modopts.ini or C:\sbbs\ctrl\modopts.ini).
+2. Find the [xtrn_sec] section, somewhere beneath it add the line:
+   eval_before_exec = load('tweeter.js', 'door', prog.name );
+3. save the file.
+
+
+---===] Todo / Wishlist [===---
+Here are some things that I'd like to do with this script.
+* Add a field in the UserDB with a user's Twitter handle. Use that handle when 
+  tweeting about a user, eg "@DaiTengu has logged on to node 1"
+* Make phrases a bit more customizable, perhaps in modopts.ini or a separate 
+  file.
+* Add the ability to tweet for custom events (don't be locked into doors, 
+  logons, logoffs, messages, and file transfers)
+
+
+
+---===] Obtaining Twitter API Keys [===---
+Twitter API keys aren't the easiest thing to obtain, especially if you're not 
+familiar with APIs and application development.  I'll try to list the steps
+you have to go through here. 
+
+1.  Log in with your Twitter account that you will be using and go to: 
+    https://developer.twitter.com/en/account/get-started
+2.  Click on "Create an App"
+3.  Fill in your App details, I called mine "War Ensemble BBS"
+4.  Fill out the description. This can be brief. I suggest:
+    "Sends out a Tweet when certain events happen on the BBS"
+5.  Enter your website URL (eg: http://QWKNAME.synchro.net)
+6.  DO NOT click "enable signon with twitter". 
+7.  Everything else can remain blank, except for the "Tell us how this app will
+    be used" box.  It requires 100 characters, Here's some boilerplate you can 
+    copy/paste and edit to fit your needs:
+    | This application will be used to send a tweet whenever certain events 
+    | happen on <Your BBS Name>, such as someone logging on, logging off, 
+    | posting a message, etc.
+8.  Click "Create", read the pop-up box, and click "Create" again.
+9.  Congratulations, your "app" has been created. You may want to edit the "App
+    Details" page, upload a custom icon, etc. 
+10. Your API Keys can be retrieved by clicking the "Keys and Tokens" tab.
+11. You will need to click "Create" under "Access token & access token secret" 
+    if you do not have any keys listed there.
+12. Enter the keys next to the corresponding values in modopts.ini, as listed 
+    under the "Instructions" section above.
+
+
+---===] Support [===---
+Support is best done either via DoveNet (Synchronet Discussion), IRC 
+(irc.synchro.net in #Synchronet or #warensemble) or logging on to 
+warensemble.com and posting a message in the Local - Support message area. 
+I prefer to handle support isues in public, as it creates an easily searchable 
+archive for others should they have the same or similar issues. 
+PLEASE DO NOT SEND ME YOUR TWITTER API KEYS. I don't need them and it could 
+allow someone to hijack your Twitter account. 
+
+
+---===] Other [===---
+This is "Babby's first Javascript".  Coding/programing isn't my thing, I have
+a basic grasp of it, and I can bash script with the worst of the best of them,
+but I've really never messed with Javascript before. This could be the beginning
+of something glorious, or it could end with me locked in a padded room, rocking
+myself back and forth, sucking on my thumb.
+
+-] Flattery will get you everywhere [-
+I know a lot of people ask this, but seriously, tell me what you think. I know
+my code is fairly sloppy, and I could have used shortcuts in an already short 
+script, but I'm new to this. Hell, this documentation is already 5x the size of 
+tweeter.js. 
+Engagement keeps me motivated. :)
+
+
+---===] Special Thanks [===---
+Special Thanks to Rob (DigitalMan) and Stephen (Deuce) for continuing to work on
+Synchronet even after all these years, along with the countless others that have 
+put in time to make Synchronet better.
+
+Thanks to echicken for building the twitter.js API interface, without which I 
+doubt I ever would have been able to write Babby's First Javascript. 
+
+Also, a very special thanks to echicken and DigitalMan for humoring me and 
+putting up with my inane questions in #Synchronet. 
+
+
