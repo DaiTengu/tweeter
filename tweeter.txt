@@ -7,7 +7,7 @@ Hey, so I'm almost as bad at documentation as I am at coding.
        You've been warned.
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Tweeter uses echicken's twitter.js script to post the following events 
+Tweeter uses echicken's twitter.js library to post the following events
 on twitter:
 
 * When someone logs on
